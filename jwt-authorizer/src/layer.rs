@@ -38,6 +38,17 @@ impl<C> JwtAuthorizer<C>
 where
     C: Clone + DeserializeOwned + Send + Sync,
 {
+    /// Builds Authorizer Layer from an existing DecodingKey
+    pub fn from_decoding_key(key: jsonwebtoken::DecodingKey) -> JwtAuthorizer<C> {
+        JwtAuthorizer {
+            key_source_type: KeySourceType::DecodingKey(key),
+            refresh: Default::default(),
+            claims_checker: None,
+            validation: None,
+            jwt_source: JwtSource::AuthorizationHeader,
+        }
+    }
+
     /// Builds Authorizer Layer from a OpenId Connect discover metadata
     pub fn from_oidc(issuer: &str) -> JwtAuthorizer<C> {
         JwtAuthorizer {

@@ -52,6 +52,7 @@ fn read_data(path: &str) -> Result<Vec<u8>, InitError> {
 }
 
 pub enum KeySourceType {
+    DecodingKey(DecodingKey),
     RSA(String),
     RSAString(String),
     EC(String),
@@ -76,6 +77,16 @@ where
         jwt_source: JwtSource,
     ) -> Result<Authorizer<C>, InitError> {
         Ok(match key_source_type {
+            KeySourceType::DecodingKey(key) => Authorizer {
+                key_source: KeySource::SingleKeySource(Arc::new(KeyData {
+                    kid: None,
+                    alg: vec![Algorithm::RS256, Algorithm::RS384, Algorithm::RS512],
+                    key,
+                })),
+                claims_checker,
+                validation,
+                jwt_source,
+            },
             KeySourceType::RSA(path) => {
                 let key = DecodingKey::from_rsa_pem(&read_data(path.as_str())?)?;
                 Authorizer {
